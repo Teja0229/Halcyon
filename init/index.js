@@ -1,5 +1,6 @@
+const path = require('path');
 if (process.env.NODE_ENV !== "production") {
-    require("dotenv").config({ path: "../.env" });
+    require("dotenv").config({ path: path.join(__dirname, "../.env") });
 }
 const mongoose = require('mongoose');
 const initData = require('./data.js');
@@ -7,10 +8,12 @@ const Listing = require('../models/listing.js');
 
 const dbUrl = process.env.ATLASDB_URL || 'mongodb://127.0.0.1:27017/Halcoyn';
 
-main().then(() => {
-    console.log('Connected to DB');
+main().then(async () => {
+    console.log('Connected to DB:', dbUrl.includes('mongodb+srv') ? 'MongoDB Atlas' : 'Local MongoDB');
+    await initDB();
+    mongoose.connection.close();
 }).catch((err) => {
-    console.error(err);
+    console.error("Database connection error:", err);
 });
 
 async function main() { 
@@ -59,5 +62,3 @@ const initDB = async () => {
     }
     console.log('Database initialized with listings and 5 reviews each!');
 };
-
-initDB();
