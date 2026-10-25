@@ -13,6 +13,8 @@ const methodOverride = require('method-override');
 const ejsMate = require('ejs-mate');
 const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/ExpressError.js");
+const crypto = require("crypto");
+const { sendPasswordResetEmail, sendPasswordResetConfirmationEmail } = require("./utils/mailer.js");
 const { isLoggedIn, saveRedirectUrl, validateListing, validateReview } = require("./middleware.js");
 const session = require("express-session");
 const connectMongo = require("connect-mongo");
@@ -28,7 +30,9 @@ main()
     .catch((err) => console.error(err));
 
 async function main() {
-    await mongoose.connect(dbUrl);
+    await mongoose.connect(dbUrl, {
+        autoSelectFamily: false,
+    });
 }
 
 app.set('view engine', 'ejs');
@@ -42,6 +46,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Mongo session store
 const store = MongoStore.create({
     mongoUrl: dbUrl,
+    mongoOptions: {
+        autoSelectFamily: false,
+    },
     crypto: {
         secret: process.env.SECRET || "halyconsupersecretkey2026",
     },
@@ -174,6 +181,158 @@ app.get("/logout", (req, res, next) => {
         res.redirect("/listings");
     });
 });
+
+// ==========================================
+// Forgot & Reset Password Routes (Mail)
+// ==========================================
+
+app.get("/forgot-password", (req, res) => {
+    if (req.isAuthenticated()) return res.redirect("/listings");
+    res.render("users/forgot", { layout: "layouts/boilerplate" });
+});
+
+app.get("/forgot", (req, res) => {
+    res.redirect("/forgot-password");
+});
+
+app.post("/forgot-password", wrapAsync(async (req, res) => {
+    const input = (req.body.email || "").trim();
+    if (!input) {
+        req.flash("error", "Please enter your email address.");
+        return res.redirect("/forgot-password");
+    }
+
+    const user = await User.findOne({
+        $or: [
+            { email: input },
+            { email: input.toLowerCase() },
+            { username: input }
+        ]
+    });
+
+    if (!user) {
+        req.flash("error", "No account found with that email address or username.");
+        return res.redirect("/forgot-password");
+    }
+
+    // Generate secure 32-byte token
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+
+    // Token expires in 1 hour (3600000 ms)
+    user.resetPasswordToken = hashedToken;
+    user.resetPasswordExpires = Date.now() + 3600000;
+    await user.save();
+
+    // Construct reset link
+    const resetUrl = `${req.protocol}://${req.get("host")}/reset-password/${rawToken}`;
+
+    // Send reset instructions via mailer
+    try {
+        const mailResult = await sendPasswordResetEmail({
+            toEmail: user.email,
+            username: user.username,
+            resetUrl
+        });
+
+        if (mailResult && mailResult.devMode) {
+            req.flash(
+                "success",
+                `Password reset link generated! In development mode, check your server console for the link or preview.`
+            );
+        } else {
+            req.flash("success", `Password reset link has been sent to ${user.email}. Please check your inbox.`);
+        }
+    } catch (mailErr) {
+        console.error("Error sending reset password email:", mailErr);
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+        req.flash("error", "Failed to send reset email. Please try again later.");
+        return res.redirect("/forgot-password");
+    }
+
+    res.redirect("/login");
+}));
+
+app.get("/reset-password/:token", wrapAsync(async (req, res) => {
+    if (req.isAuthenticated()) return res.redirect("/listings");
+    const { token } = req.params;
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({
+        $or: [
+            { resetPasswordToken: hashedToken },
+            { resetPasswordToken: token }
+        ],
+        resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+        req.flash("error", "Password reset token is invalid or has expired. Please request a new one.");
+        return res.redirect("/forgot-password");
+    }
+
+    res.render("users/reset", { token, layout: "layouts/boilerplate" });
+}));
+
+app.get("/reset/:token", (req, res) => {
+    res.redirect(`/reset-password/${req.params.token}`);
+});
+
+app.post("/reset-password/:token", wrapAsync(async (req, res, next) => {
+    const { token } = req.params;
+    const { password, confirmPassword } = req.body;
+
+    if (!password || !confirmPassword) {
+        req.flash("error", "Please provide and confirm your new password.");
+        return res.redirect(`/reset-password/${token}`);
+    }
+
+    if (password !== confirmPassword) {
+        req.flash("error", "Passwords do not match. Please try again.");
+        return res.redirect(`/reset-password/${token}`);
+    }
+
+    if (password.length < 6) {
+        req.flash("error", "Password must be at least 6 characters long.");
+        return res.redirect(`/reset-password/${token}`);
+    }
+
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({
+        $or: [
+            { resetPasswordToken: hashedToken },
+            { resetPasswordToken: token }
+        ],
+        resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+        req.flash("error", "Password reset token is invalid or has expired. Please request a new one.");
+        return res.redirect("/forgot-password");
+    }
+
+    // Set new password with passport-local-mongoose
+    await user.setPassword(password);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    // Send confirmation email in background
+    sendPasswordResetConfirmationEmail({
+        toEmail: user.email,
+        username: user.username
+    }).catch(err => console.error("Confirmation email notice:", err.message));
+
+    // Automatically log in user with the new password
+    req.login(user, (err) => {
+        if (err) return next(err);
+        req.flash("success", `Your password has been successfully reset! Welcome back, ${user.username}.`);
+        res.redirect("/listings");
+    });
+}));
 
 // ==========================================
 // Cart / Saved Stays Routes

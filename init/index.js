@@ -2,26 +2,13 @@ const path = require('path');
 if (process.env.NODE_ENV !== "production") {
     require("dotenv").config({ path: path.join(__dirname, "../.env") });
 }
+
 const mongoose = require('mongoose');
 const initData = require('./data.js');
 const Listing = require('../models/listing.js');
-
-const dbUrl = process.env.ATLASDB_URL || 'mongodb://127.0.0.1:27017/Halcoyn';
-
-main().then(async () => {
-    console.log('Connected to DB:', dbUrl.includes('mongodb+srv') ? 'MongoDB Atlas' : 'Local MongoDB');
-    await initDB();
-    mongoose.connection.close();
-}).catch((err) => {
-    console.error("Database connection error:", err);
-});
-
-async function main() { 
-    await mongoose.connect(dbUrl);
-}
- 
-
 const Review = require('../models/review.js');
+
+const dbUrl = process.env.ATLASDB_URL || 'mongodb://127.0.0.1:27017/Halcyon';
 
 const sampleReviewsPool = [
     { comment: "Absolutely breathtaking experience! The place was spotless, beautifully designed, and the views were mesmerizing.", rating: 5 },
@@ -33,6 +20,10 @@ const sampleReviewsPool = [
     { comment: "Such a charming and serene place to unwind. Spotless rooms, fast Wi-Fi, and very thoughtful touches all around.", rating: 5 },
     { comment: "One of the best stays we've booked! Prime location, aesthetic interior, and warm hospitality. 10/10 recommended.", rating: 5 }
 ];
+
+async function main() {
+    await mongoose.connect(dbUrl);
+}
 
 const initDB = async () => {
     await Listing.deleteMany({});
@@ -62,3 +53,15 @@ const initDB = async () => {
     }
     console.log('Database initialized with listings and 5 reviews each!');
 };
+
+// Execute Database Seeding
+main()
+    .then(async () => {
+        console.log('Connected to DB:', dbUrl.includes('mongodb+srv') ? 'MongoDB Atlas' : 'Local MongoDB');
+        await initDB();
+        await mongoose.connection.close();
+        console.log('Database connection closed.');
+    })
+    .catch((err) => {
+        console.error("Database connection error:", err);
+    });

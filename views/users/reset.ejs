@@ -1,0 +1,121 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="row mt-4 mb-5 justify-content-center">
+    <div class="col-12 col-sm-10 col-md-8 col-lg-5">
+        <div class="card auth-card shadow-sm border-0 rounded-4 p-4 p-md-5 bg-white">
+            <div class="text-center mb-4">
+                <div class="auth-icon-circle mx-auto mb-3">
+                    <i class="fa-solid fa-shield-halved page-icon-red fs-1"></i>
+                </div>
+                <h3 class="fw-bold mb-1">Set New Password</h3>
+                <p class="text-muted small">Choose a strong, secure password for your Halycon account.</p>
+            </div>
+
+            <form action="/reset-password/<%= token %>" method="POST" novalidate class="needs-validation" id="resetPasswordForm">
+                <div class="mb-3">
+                    <label for="password" class="form-label fw-semibold small">New Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa-solid fa-lock"></i></span>
+                        <input 
+                            type="password" 
+                            name="password" 
+                            id="password" 
+                            class="form-control bg-light border-start-0 border-end-0" 
+                            placeholder="Enter new password (min. 6 characters)"
+                            minlength="6"
+                            required
+                            autocomplete="new-password"
+                            autofocus
+                        />
+                        <button class="btn btn-light border border-start-0 text-muted toggle-pwd-btn" type="button" data-target="password" tabindex="-1">
+                            <i class="fa-regular fa-eye"></i>
+                        </button>
+                        <div class="invalid-feedback">Password must be at least 6 characters long.</div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="confirmPassword" class="form-label fw-semibold small">Confirm New Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa-solid fa-lock-open"></i></span>
+                        <input 
+                            type="password" 
+                            name="confirmPassword" 
+                            id="confirmPassword" 
+                            class="form-control bg-light border-start-0 border-end-0" 
+                            placeholder="Confirm your new password"
+                            minlength="6"
+                            required
+                            autocomplete="new-password"
+                        />
+                        <button class="btn btn-light border border-start-0 text-muted toggle-pwd-btn" type="button" data-target="confirmPassword" tabindex="-1">
+                            <i class="fa-regular fa-eye"></i>
+                        </button>
+                        <div class="invalid-feedback" id="confirmFeedback">Please confirm your new password.</div>
+                    </div>
+                    <div id="matchAlert" class="small mt-1 text-danger d-none">
+                        <i class="fa-solid fa-triangle-exclamation me-1"></i> Passwords do not match.
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-danger w-100 py-2 rounded-3 fw-semibold add-btn" id="submitBtn">
+                    <i class="fa-solid fa-check me-2"></i> Update Password
+                </button>
+            </form>
+
+            <div class="text-center mt-4 pt-3 border-top">
+                <a href="/login" class="text-secondary fw-semibold text-decoration-none small">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Back to Login
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Password visibility toggler
+    document.querySelectorAll('.toggle-pwd-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            const icon = this.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+
+    // Password match validation
+    const form = document.getElementById('resetPasswordForm');
+    const pwd = document.getElementById('password');
+    const confirmPwd = document.getElementById('confirmPassword');
+    const matchAlert = document.getElementById('matchAlert');
+
+    function checkMatch() {
+        if (confirmPwd.value && pwd.value !== confirmPwd.value) {
+            matchAlert.classList.remove('d-none');
+            confirmPwd.setCustomValidity("Passwords don't match");
+        } else {
+            matchAlert.classList.add('d-none');
+            confirmPwd.setCustomValidity("");
+        }
+    }
+
+    pwd.addEventListener('input', checkMatch);
+    confirmPwd.addEventListener('input', checkMatch);
+
+    form.addEventListener('submit', function(e) {
+        checkMatch();
+        if (pwd.value !== confirmPwd.value) {
+            e.preventDefault();
+            e.stopPropagation();
+            matchAlert.classList.remove('d-none');
+        }
+    });
+</script>

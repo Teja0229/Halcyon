@@ -13,6 +13,14 @@ const userSchema = new Schema({
         type: String,
         default: ""
     },
+    resetPasswordToken: {
+        type: String,
+        default: undefined
+    },
+    resetPasswordExpires: {
+        type: Date,
+        default: undefined
+    },
     cart: [
         {
             type: Schema.Types.ObjectId,

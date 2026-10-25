@@ -57,6 +57,7 @@
 
 ### 🔐 Robust Authentication & Session Handling
 - **Passport.js & PBKDF2:** Salting and hashing with 128-byte cryptographic keys.
+- **📧 Email Password Reset Flow (Nodemailer):** Secure SHA-256 token-based password reset delivered directly to user's email inbox with 1-hour expiration and development fallback preview.
 - **Smart Post-Login Redirection (`isLoggedIn` & `saveRedirectUrl`):** Redirects users back to the exact page or action they attempted before signing in.
 - **Dual-Layer Validation:** Bootstrap client-side `.needs-validation` combined with strict server-side **Joi** schema validation.
 
@@ -71,6 +72,7 @@
 | **Database** | [MongoDB](https://www.mongodb.com/) (v7.0+) | Document-oriented NoSQL database |
 | **ODM** | [Mongoose](https://mongoosejs.com/) (v9.10.2) | Schema definition, model validation, and population hooks |
 | **Auth** | [Passport.js](http://www.passportjs.org/) + `passport-local-mongoose` | PBKDF2 hashing, local strategy, and session serialization |
+| **Mailing** | [Nodemailer](https://nodemailer.com/) | Transactional password reset and security confirmation emails |
 | **Templating** | [EJS](https://ejs.co/) + [ejs-mate](https://github.com/pallot/ejs-mate) | Layout inheritance, partials, and dynamic server-rendered views |
 | **Validation**| [Joi](https://joi.dev/) (v18.2.9) | Schema description language for server-side payload validation |
 | **Maps** | [Leaflet.js](https://leafletjs.com/) + OpenStreetMap | Interactive client-side map rendering and Nominatim geocoding |
@@ -215,6 +217,10 @@ Visit **[http://localhost:8080](http://localhost:8080)** in your browser.
 | `GET` | `/signup` / `POST /signup` | User registration view & handler | Guest only |
 | `GET` | `/login` / `POST /login` | User login view & authentication handler | Guest only |
 | `GET` | `/logout` | Destroys session & logs out user | Authenticated |
+| `GET` | `/forgot-password` | View form to request password reset link | Guest only |
+| `POST` | `/forgot-password` | Generates secure SHA-256 token & dispatches reset email | Guest only |
+| `GET` | `/reset-password/:token` | View form to set new password (validates token & expiration) | Guest only |
+| `POST` | `/reset-password/:token` | Validates passwords, updates hash/salt, and logs user in | Guest only |
 | `GET` | `/help`, `/contact`, `/careers` | Static customer support & company pages | Public |
 
 ---
@@ -225,6 +231,8 @@ Visit **[http://localhost:8080](http://localhost:8080)** in your browser.
 - `username`: Auto-managed by `passport-local-mongoose`.
 - `email`: String, required, unique.
 - `phone`: Normalized standard format (`+91 XXXXXXXXXX`).
+- `resetPasswordToken`: String, hashed token for verification.
+- `resetPasswordExpires`: Date, expiration timestamp (1-hour TTL).
 - `cart`: Array of ObjectIds referencing `Listing`.
 - `bookings`: Array of embedded sub-documents (`listing`, `bookingCode`, `checkIn`, `checkOut`, `guests`, `totalPrice`, `bookedAt`).
 
