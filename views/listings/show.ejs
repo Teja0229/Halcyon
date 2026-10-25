@@ -1,57 +1,490 @@
 <% layout("layouts/boilerplate") %>
 
-<div class="row mt-3">
-    <div class="col-8 offset-3">
-        <h3><%= listing.title %></h3>
-    </div>
+<div class="row mt-2 mt-md-4">
+    <div class="col-12 col-md-10 col-lg-8 mx-auto">
+        <a href="/listings" class="btn btn-sm btn-outline-secondary mb-3 rounded-pill">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to All Stays
+        </a>
 
-    <div class="card col-6 offset-3 show-card">
-        <img src="<%= listing.image.url %>" 
-            class="card-img-top show-img" 
-            alt="listing_image"
-        />
-  
-        <div class="card-body">
-            <p class="card-text">
-         
-                <%= listing.description %> <br>
-                &#8377; <%= listing.price.toLocaleString("en-IN") %> <br>
-                <%= listing.location %> <br>
-                <%= listing.country %>
-            </p>
+        <h3 class="fw-bold mb-3"><%= listing.title %></h3>
+
+        <div class="card show-card border-0 shadow-sm mb-4">
+            <div 
+                class="show-img-wrapper position-relative" 
+                role="button" 
+                data-bs-toggle="modal" 
+                data-bs-target="#imagePreviewModal" 
+                title="Click to view full photo and details"
+            >
+                <% 
+                    let showImgUrl = (listing.image && listing.image.url) 
+                        ? listing.image.url 
+                        : (typeof listing.image === 'string' && listing.image ? listing.image : 'https://images.unsplash.com/photo-1625505826533-5c80aca7d157?ixlib=rb-4.0.3');
+                %>
+                <img 
+                    src="<%= showImgUrl %>" 
+                    class="card-img-top show-img" 
+                    alt="<%= listing.title %>"
+                />
+                <div class="show-img-badge position-absolute bottom-0 end-0 m-3">
+                    <span class="badge bg-dark bg-opacity-75 text-white px-3 py-2 rounded-pill small shadow">
+                        <i class="fa-solid fa-expand me-1"></i> View Full Photo
+                    </span>
+                </div>
+            </div>
+      
+            <div class="card-body p-3 p-md-4">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3 pb-3 border-bottom">
+                    <div>
+                        <div class="text-muted mb-1">
+                            <i class="fa-solid fa-location-dot text-danger me-1"></i>
+                            <strong><%= listing.location %></strong>, <%= listing.country %>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-danger-subtle text-danger fw-semibold px-2 py-1 rounded-pill small">
+                                <i class="fa-solid fa-star me-1 text-warning"></i> 4.9 &bull; Verified Stay
+                            </span>
+                            <span class="text-muted small">&bull; <%= listing.reviews ? listing.reviews.length : 0 %> reviews</span>
+                        </div>
+                    </div>
+
+                    <!-- Side of the Price: Book Now button -->
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="show-price text-end">
+                            <span class="fs-3 fw-bold text-dark">&#8377; <%= listing.price ? listing.price.toLocaleString("en-IN") : '0' %></span>
+                            <span class="text-muted small d-block" style="font-size: 0.8rem; margin-top: -3px;">/ night</span>
+                        </div>
+                        <button 
+                            type="button" 
+                            class="btn btn-danger px-4 py-2 rounded-pill fw-semibold add-btn shadow-sm d-flex align-items-center gap-2"
+                            data-bs-toggle="modal" 
+                            data-bs-target="#bookingModal"
+                        >
+                            <i class="fa-solid fa-bolt"></i> Book Now
+                        </button>
+                    </div>
+                </div>
+
+                <div class="pt-1">
+                    <h6 class="fw-bold text-uppercase text-muted small mb-2">About this place</h6>
+                    <p class="card-text text-secondary lh-lg mb-0">
+                        <%= listing.description %>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <% 
+            let isSavedInShow = false;
+            if (currUser && currUser.cart && currUser.cart.length) {
+                isSavedInShow = currUser.cart.some(id => (id._id ? id._id.toString() : id.toString()) === listing._id.toString());
+            }
+        %>
+        <div class="d-flex align-items-center flex-wrap gap-3 mb-5">
+            <button 
+                type="button" 
+                class="btn btn-danger px-4 py-2 rounded-pill fw-semibold add-btn d-flex align-items-center gap-2 shadow-sm"
+                data-bs-toggle="modal" 
+                data-bs-target="#bookingModal"
+            >
+                <i class="fa-solid fa-bolt"></i> Book Now
+            </button>
+
+            <button 
+                type="button" 
+                class="btn <%= isSavedInShow ? 'btn-danger text-white' : 'btn-outline-danger' %> px-4 py-2 rounded-pill fw-semibold cart-toggle-btn d-flex align-items-center gap-2 shadow-sm"
+                data-listing-id="<%= listing._id %>"
+                id="showCartBtn"
+            >
+                <i class="<%= isSavedInShow ? 'fa-solid' : 'fa-regular' %> fa-heart"></i>
+                <span class="cart-btn-text"><%= isSavedInShow ? 'Saved in Cart' : 'Save to Cart' %></span>
+            </button>
+        </div>
+
+        <!-- Reviews Section -->
+        <div class="reviews-section border-top pt-4 mb-5">
+            <!-- All Reviews Display -->
+            <% if (listing.reviews && listing.reviews.length > 0) { %>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h4 class="fw-bold mb-0">
+                        <i class="fa-solid fa-comments text-danger me-2"></i>Guest Reviews
+                    </h4>
+                    <span class="badge bg-danger rounded-pill px-3 py-2">
+                        <%= listing.reviews.length %> Reviews
+                    </span>
+                </div>
+
+                <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+                    <% for (let review of listing.reviews) { %>
+                        <div class="col">
+                            <div class="card h-100 border p-3 rounded-3 shadow-sm bg-white">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="avatar-circle bg-light border text-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                                            <i class="fa-solid fa-user"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-bold small">Verified Guest</h6>
+                                            <small class="text-muted" style="font-size: 0.75rem;">
+                                                <%= new Date(review.createdAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric' }) %>
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="text-warning small">
+                                        <% for(let s = 1; s <= 5; s++) { %>
+                                            <i class="fa-<%= s <= review.rating ? 'solid' : 'regular' %> fa-star"></i>
+                                        <% } %>
+                                    </div>
+                                </div>
+                                <p class="card-text text-secondary mb-3 small lh-base">
+                                    "<%= review.comment %>"
+                                </p>
+                                <form method="POST" action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE" class="mt-auto text-end">
+                                    <button class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 0.78rem;">
+                                        <i class="fa-regular fa-trash-can me-1"></i> Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+            <% } %>
+
+            <!-- Leave a Review Form -->
+            <% if (currUser) { %>
+                <div class="card border p-4 rounded-3 shadow-sm bg-light mt-4">
+                    <h5 class="fw-bold mb-3"><i class="fa-regular fa-pen-to-square text-danger me-2"></i>Leave a Review</h5>
+                    <form action="/listings/<%= listing._id %>/reviews" method="POST" novalidate class="needs-validation">
+                        <div class="mb-3">
+                            <label for="rating" class="form-label fw-semibold">Rating</label>
+                            <input type="range" min="1" max="5" id="rating" name="review[rating]" class="form-range" value="5" />
+                            <div class="d-flex justify-content-between text-muted small px-1">
+                                <span>1 &#9733; Poor</span>
+                                <span>2 &#9733; Fair</span>
+                                <span>3 &#9733; Good</span>
+                                <span>4 &#9733; Very Good</span>
+                                <span>5 &#9733; Excellent</span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="comment" class="form-label fw-semibold">Your Review</label>
+                            <textarea 
+                                class="form-control"
+                                name="review[comment]" 
+                                id="comment" 
+                                rows="3" 
+                                placeholder="Share your experience with this property..." 
+                                required
+                            ></textarea>
+                            <div class="invalid-feedback">Please write a comment before submitting</div>
+                        </div>
+                        <button type="submit" class="btn btn-dark add-btn px-4">Submit Review</button>
+                    </form>
+                </div>
+            <% } else { %>
+                <div class="card border-0 bg-light p-4 rounded-3 text-center mt-4 shadow-sm">
+                    <i class="fa-regular fa-comment-dots text-danger fs-2 mb-2"></i>
+                    <h6 class="fw-bold mb-1">Want to review this stay?</h6>
+                    <p class="text-muted small mb-3">Please log in to your account to leave ratings and reviews.</p>
+                    <div>
+                        <a href="/login" class="btn btn-outline-danger btn-sm rounded-pill px-4 fw-semibold">
+                            <i class="fa-solid fa-right-to-bracket me-1"></i> Log in to Review
+                        </a>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+
+        <!-- Map Location Section: "Where you'll be" -->
+        <div class="map-section border-top pt-4 mb-5">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                <div>
+                    <h4 class="fw-bold mb-1">
+                        <i class="fa-solid fa-map-location-dot text-danger me-2"></i>Where you'll be
+                    </h4>
+                    <p class="text-muted small mb-0">
+                        <i class="fa-solid fa-location-dot text-danger me-1"></i>
+                        <strong><%= listing.location %></strong>, <%= listing.country %>
+                    </p>
+                </div>
+                <span class="badge bg-light text-secondary border px-3 py-2 rounded-pill small">
+                    <i class="fa-solid fa-circle-check text-success me-1"></i> Verified Location
+                </span>
+            </div>
+
+            <!-- Interactive Map Container -->
+            <div id="map" class="shadow-sm border rounded-4 position-relative"></div>
+
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-3 px-1">
+                <small class="text-muted">
+                    <i class="fa-solid fa-shield-halved text-success me-1"></i>
+                    Approximate location shown. Exact address will be sent upon confirmed booking.
+                </small>
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="recenterMapBtn">
+                    <i class="fa-solid fa-location-crosshairs me-1 text-danger"></i> Recenter Map
+                </button>
+            </div>
+        </div>
+
+        <!-- Host Controls: Edit & Delete (Shown in last under maps) -->
+        <div class="host-management-section border-top pt-4 pb-4 mb-5">
+            <div class="card border border-dark-subtle shadow-sm rounded-4 p-3 p-md-4 bg-light">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge bg-dark rounded-pill px-3 py-1 text-uppercase fw-semibold" style="letter-spacing: 0.5px; font-size: 0.72rem;">
+                                <i class="fa-solid fa-user-gear me-1 text-warning"></i> Host Actions
+                            </span>
+                            <span class="text-muted small">&bull; Property ID: #<%= listing._id.toString().slice(-6) %></span>
+                        </div>
+                        <h5 class="fw-bold mb-1 text-dark">Manage this Listing</h5>
+                        <p class="text-secondary small mb-0">Update listing details, pricing, photos, or permanently remove this stay from Halycon.</p>
+                    </div>
+                    <div class="d-flex align-items-center flex-wrap gap-2">
+                        <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark px-4 py-2 rounded-pill fw-semibold edit-btn shadow-sm d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-pen-to-square"></i> Edit Listing
+                        </a>
+                        <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE" class="m-0">
+                            <button type="submit" class="btn btn-outline-danger px-4 py-2 rounded-pill fw-semibold shadow-sm d-flex align-items-center gap-2" onclick="return confirm('Are you sure you want to permanently delete this listing? All associated reviews and cart references will be removed.')">
+                                <i class="fa-regular fa-trash-can"></i> Delete Listing
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
-    <br />
-
-    <div class="btns">
-        <a href="/listings/<%= listing._id %>/edit" 
-            class="btn btn-dark col-1 offset-3 edit-btn">Edit</a>
-
-        <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE">
-            <button class="btn btn-dark offset-5">Delete</button>
-        </form>
-    </div>
-
-    <div class="col-8 offset-3 mb-3">
-         <br>
-        <h4>Leave a Review</h4>
-    </div>
-    <form action="/listings/<%= listing.id %>/reviews" method="POST" novalidate class="needs-validation">
-        <div class="mb-3 mt-3">
-            <label for="rating" class="form-label">Rating</label>
-            <input type="range" min="1" max="5" id="rating" name="review[rating]"  class="form-range"/>  
-        </div>
-        <div class="mb-3 mt-3">
-            <label for="comment">Comments</label>
-            <textarea 
-            class="form-control"
-            name="review[comment]" 
-            id="comment" 
-            cols="20" rows="5"></textarea>
-            <div class="invalid-feedback">Please submit some comments for review</div>
-        </div>
-        <buttom class="btn btn-outline-dark">Submit</buttom>
-    </form>
-
 </div>
+
+<!-- Image Preview Modal (Triggered when clicking the stay image) -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content border-0 rounded-4 overflow-hidden shadow-lg bg-dark text-white">
+            <div class="modal-header border-0 bg-dark py-2 px-3 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-danger rounded-pill px-2 py-1 small">
+                        <i class="fa-solid fa-compass me-1"></i> Halycon Stay Photo
+                    </span>
+                    <span class="text-white-50 small d-none d-sm-inline">&bull; <%= listing.title %></span>
+                </div>
+                <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0 text-center bg-black d-flex align-items-center justify-content-center" style="min-height: 420px; max-height: 70vh;">
+                <img src="<%= showImgUrl %>" alt="<%= listing.title %>" class="img-fluid" style="max-height: 70vh; object-fit: contain;" />
+            </div>
+            <!-- Bottom banner: Price and Book Now button side by side -->
+            <div class="modal-footer border-0 bg-dark p-3 d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div>
+                    <h5 class="fw-bold text-white mb-0"><%= listing.title %></h5>
+                    <small class="text-white-50"><i class="fa-solid fa-location-dot text-danger me-1"></i><%= listing.location %>, <%= listing.country %></small>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="text-end">
+                        <span class="fs-4 fw-bold text-white">&#8377; <%= listing.price ? listing.price.toLocaleString("en-IN") : '0' %></span>
+                        <small class="text-white-50 d-block" style="font-size: 0.78rem;">per night</small>
+                    </div>
+                    <button 
+                        type="button" 
+                        class="btn btn-danger px-4 py-2 rounded-pill fw-semibold add-btn shadow d-flex align-items-center gap-2"
+                        data-bs-target="#bookingModal" 
+                        data-bs-toggle="modal" 
+                        data-bs-dismiss="modal"
+                    >
+                        <i class="fa-solid fa-bolt"></i> Book Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Booking & Instant Reservation Modal -->
+<div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header bg-light border-bottom p-3">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                        <i class="fa-solid fa-bolt" style="font-size: 0.9rem;"></i>
+                    </div>
+                    <div>
+                        <h6 class="modal-title fw-bold mb-0" id="bookingModalLabel">Instant Reservation</h6>
+                        <small class="text-muted"><%= listing.title %></small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form action="/listings/<%= listing._id %>/book" method="POST" id="bookingForm" class="needs-validation" novalidate>
+                <div class="modal-body p-3 p-md-4">
+                    <!-- Stay Card Mini Preview -->
+                    <div class="d-flex align-items-center gap-3 p-2 bg-light rounded-3 mb-3 border">
+                        <img src="<%= showImgUrl %>" alt="<%= listing.title %>" class="rounded-2 object-fit-cover flex-shrink-0" style="width: 65px; height: 60px;" />
+                        <div class="flex-grow-1 min-w-0">
+                            <h6 class="fw-bold mb-0 text-truncate" style="font-size: 0.95rem;"><%= listing.title %></h6>
+                            <small class="text-muted d-block text-truncate"><i class="fa-solid fa-location-dot text-danger me-1"></i><%= listing.location %>, <%= listing.country %></small>
+                            <span class="fw-bold text-dark small">&#8377; <%= listing.price ? listing.price.toLocaleString("en-IN") : '0' %> <span class="text-muted fw-normal">/ night</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Dates Row -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label for="checkInDate" class="form-label small fw-semibold text-muted mb-1">Check-in</label>
+                            <input type="date" id="checkInDate" name="checkIn" class="form-control rounded-3" required />
+                        </div>
+                        <div class="col-6">
+                            <label for="checkOutDate" class="form-label small fw-semibold text-muted mb-1">Check-out</label>
+                            <input type="date" id="checkOutDate" name="checkOut" class="form-control rounded-3" required />
+                        </div>
+                    </div>
+
+                    <!-- Guests -->
+                    <div class="mb-3">
+                        <label for="guestCount" class="form-label small fw-semibold text-muted mb-1">Guests</label>
+                        <select id="guestCount" name="guests" class="form-select rounded-3">
+                            <option value="1">1 Guest</option>
+                            <option value="2" selected>2 Guests</option>
+                            <option value="3">3 Guests</option>
+                            <option value="4">4+ Guests</option>
+                        </select>
+                    </div>
+
+                    <!-- Contact Details -->
+                    <div class="mb-3">
+                        <label for="guestName" class="form-label small fw-semibold text-muted mb-1">Primary Guest Name</label>
+                        <input type="text" id="guestName" name="guestName" class="form-control rounded-3" placeholder="Enter your full name" value="<%= currUser ? currUser.username : '' %>" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="guestPhone" class="form-label small fw-semibold text-muted mb-1">Contact Phone Number</label>
+                        <div class="input-group has-validation">
+                            <span class="input-group-text bg-white border-end-0 fw-bold text-dark px-3">
+                                <i class="fa-solid fa-phone text-danger me-2"></i>+91
+                            </span>
+                            <input 
+                                type="tel" 
+                                id="guestPhone" 
+                                name="guestPhone" 
+                                class="form-control border-start-0 ps-1" 
+                                placeholder="XXXXXXXXX" 
+                                value="<%= (currUser && currUser.phone) ? currUser.phone.replace('+91', '').trim() : '' %>"
+                                pattern="[0-9]{10}"
+                                maxlength="10" 
+                                required 
+                                autocomplete="tel"
+                            />
+                            <div class="invalid-feedback">Please enter a valid 10-digit mobile number.</div>
+                        </div>
+                        <div class="form-text text-muted small mt-1">
+                            <i class="fa-solid fa-circle-info text-danger me-1"></i> Example: <strong>+91 XXXXXXXXX</strong> (10-digit mobile number)
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Live Price Breakdown -->
+                    <div class="bg-light p-3 rounded-3 border mb-3">
+                        <div class="d-flex justify-content-between small text-muted mb-1">
+                            <span>&#8377; <%= listing.price ? listing.price.toLocaleString("en-IN") : '0' %> &times; <span id="bookingNightsCount">2</span> nights:</span>
+                            <span class="fw-semibold text-dark" id="bookingSubtotal">&#8377; <%= listing.price ? (listing.price * 2).toLocaleString("en-IN") : '0' %></span>
+                        </div>
+                        <div class="d-flex justify-content-between small text-muted mb-1">
+                            <span>Platform & Service fee:</span>
+                            <span class="text-success fw-semibold">FREE</span>
+                        </div>
+                        <div class="d-flex justify-content-between small text-muted mb-2">
+                            <span>Taxes & GST:</span>
+                            <span class="text-muted">Included</span>
+                        </div>
+                        <div class="border-top pt-2 d-flex justify-content-between align-items-baseline">
+                            <span class="fw-bold">Total Amount:</span>
+                            <span class="fs-4 fw-bold text-danger" id="bookingTotal">&#8377; <%= listing.price ? (listing.price * 2).toLocaleString("en-IN") : '0' %></span>
+                        </div>
+                    </div>
+
+                    <small class="text-muted d-block text-center" style="font-size: 0.78rem;">
+                        <i class="fa-solid fa-shield-halved text-success me-1"></i> Free cancellation up to 48 hours before check-in.
+                    </small>
+                </div>
+
+                <div class="modal-footer bg-light border-top p-3">
+                    <button type="submit" class="btn btn-danger w-100 py-2 rounded-3 fw-semibold add-btn">
+                        <i class="fa-solid fa-circle-check me-2"></i> Confirm & Reserve Stay
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const listingLocation = "<%= listing.location %>";
+    const listingCountry = "<%= listing.country %>";
+    const listingTitle = "<%= listing.title.replace(/"/g, '\\"') %>";
+    const listingPrice = "<%= listing.price ? listing.price.toLocaleString('en-IN') : '0' %>";
+    const listingCoords = <%- JSON.stringify((listing.geometry && listing.geometry.coordinates) ? listing.geometry.coordinates : null) %>;
+
+    // Booking Date & Live Price Calculation
+    (function initBookingCalculator() {
+        const rawPrice = <%= Number(listing.price) || 0 %>;
+        const checkInInput = document.getElementById('checkInDate');
+        const checkOutInput = document.getElementById('checkOutDate');
+        const nightsCountSpan = document.getElementById('bookingNightsCount');
+        const subtotalSpan = document.getElementById('bookingSubtotal');
+        const totalSpan = document.getElementById('bookingTotal');
+
+        if (checkInInput && checkOutInput) {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const checkoutDay = new Date(today);
+            checkoutDay.setDate(checkoutDay.getDate() + 3);
+
+            checkInInput.min = tomorrow.toISOString().split('T')[0];
+            checkInInput.value = tomorrow.toISOString().split('T')[0];
+            checkOutInput.min = checkoutDay.toISOString().split('T')[0];
+            checkOutInput.value = checkoutDay.toISOString().split('T')[0];
+
+            function calculatePrice() {
+                const d1 = new Date(checkInInput.value);
+                const d2 = new Date(checkOutInput.value);
+                let nights = 1;
+                if (!isNaN(d1) && !isNaN(d2) && d2 > d1) {
+                    nights = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
+                }
+                if (nights < 1) nights = 1;
+
+                if (nightsCountSpan) nightsCountSpan.textContent = nights;
+                const total = rawPrice * nights;
+                const formatted = '₹ ' + total.toLocaleString('en-IN');
+                if (subtotalSpan) subtotalSpan.textContent = formatted;
+                if (totalSpan) totalSpan.textContent = formatted;
+            }
+
+            checkInInput.addEventListener('change', () => {
+                checkOutInput.min = checkInInput.value;
+                if (new Date(checkOutInput.value) <= new Date(checkInInput.value)) {
+                    const nextDay = new Date(checkInInput.value);
+                    nextDay.setDate(nextDay.getDate() + 1);
+                    checkOutInput.value = nextDay.toISOString().split('T')[0];
+                }
+                calculatePrice();
+            });
+
+            checkOutInput.addEventListener('change', calculatePrice);
+            calculatePrice();
+        }
+
+        // Phone number input formatting & digit sanitizer (+91 XXXXXXXXX)
+        const phoneInput = document.getElementById('guestPhone');
+        if (phoneInput) {
+            phoneInput.addEventListener('input', function() {
+                let val = this.value.replace(/\s+/g, '');
+                if (val.startsWith('+91')) val = val.slice(3);
+                else if (val.startsWith('91') && val.length > 10) val = val.slice(2);
+                this.value = val.replace(/[^0-9]/g, '').slice(0, 10);
+            });
+        }
+    })();
+</script>
+<script src="/js/map.js"></script>

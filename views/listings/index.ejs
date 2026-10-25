@@ -1,26 +1,106 @@
 <% layout("layouts/boilerplate") %>
 
-<h3>All Listings</h3>
-
-<div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1">
-    <% for (let listing of allListings) { %>
-        <div class="col">
-            <a href="/listings/<%= listing._id %>" class="listing-link">
-                <div class="card">
-                    <img 
-                        src="<%= listing.image.url %>" 
-                        class="card-img-top" 
-                        alt="listing_image" 
-                        style="height:20rem; object-fit:cover;" 
-                    />
-                    <div class="card-body">
-                        <p class="card-text">
-                            <b><%= listing.title %></b><br>
-                            ₹<%= listing.price.toLocaleString("en-IN") %> / night
-                        </p>
-                    </div>
-                </div>
-            </a>
+<div class="listings-header mb-4">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div>
+            <h3 class="fw-bold mb-1">Explore Popular Stays</h3>
+            <p class="text-muted mb-0 small">Find and book verified stays with best prices</p>
         </div>
-    <% } %>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-light text-dark border px-3 py-2 rounded-pill">
+                <i class="fa-solid fa-building-circle-check text-danger me-1"></i> <%= allListings.length %> Properties
+            </span>
+        </div>
+    </div>
 </div>
+
+<% if (typeof searchQuery !== 'undefined' && searchQuery) { %>
+    <div class="alert alert-light border rounded-4 d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4 p-3 shadow-sm">
+        <div class="d-flex align-items-center gap-2">
+            <i class="fa-solid fa-magnifying-glass text-danger fs-5"></i>
+            <div>
+                Results for: <strong class="text-danger">"<%= searchQuery %>"</strong>
+                <span class="text-muted small ms-1">(<%= allListings.length %> properties found)</span>
+            </div>
+        </div>
+        <a href="/listings" class="btn btn-sm btn-outline-dark rounded-pill px-3">
+            <i class="fa-solid fa-xmark me-1"></i> Clear Search
+        </a>
+    </div>
+<% } %>
+
+<% if (allListings.length === 0) { %>
+    <div class="col-12 col-md-8 mx-auto text-center py-5">
+        <div class="card border-0 bg-white shadow-sm rounded-4 p-5">
+            <div class="mb-3">
+                <i class="fa-solid fa-magnifying-glass-location text-danger" style="font-size: 3.5rem;"></i>
+            </div>
+            <h4 class="fw-bold mb-2">No Stays Found</h4>
+            <p class="text-muted col-md-8 mx-auto mb-4">
+                We couldn't find any stays matching "<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>". Try searching with a different city, title, or destination name.
+            </p>
+            <div>
+                <a href="/listings" class="btn btn-danger px-4 py-2 rounded-pill fw-semibold add-btn">
+                    View All Stays
+                </a>
+            </div>
+        </div>
+    </div>
+<% } else { %>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-3 g-md-4">
+        <% for (let listing of allListings) { 
+            let imgUrl = (listing.image && listing.image.url) 
+                ? listing.image.url 
+                : (typeof listing.image === 'string' && listing.image ? listing.image : 'https://images.unsplash.com/photo-1625505826533-5c80aca7d157?ixlib=rb-4.0.3');
+            
+            let isSaved = false;
+            if (currUser && currUser.cart && currUser.cart.length) {
+                isSaved = currUser.cart.some(id => (id._id ? id._id.toString() : id.toString()) === listing._id.toString());
+            }
+        %>
+            <div class="col">
+                <a href="/listings/<%= listing._id %>" class="listing-link">
+                    <div class="card listing-card h-100">
+                        <div class="card-img-wrapper">
+                            <img 
+                                src="<%= imgUrl %>" 
+                                class="card-img-top listing-img" 
+                                alt="<%= listing.title %>"
+                                loading="lazy"
+                            />
+                            <button 
+                                class="wishlist-btn cart-toggle-btn <%= isSaved ? 'active' : '' %>" 
+                                type="button" 
+                                aria-label="Save to cart" 
+                                data-listing-id="<%= listing._id %>"
+                                title="<%= isSaved ? 'Remove from Cart' : 'Add to Cart' %>"
+                            >
+                                <i class="<%= isSaved ? 'fa-solid text-danger' : 'fa-regular' %> fa-heart"></i>
+                            </button>
+                        </div>
+                        <div class="card-body d-flex flex-column justify-content-between p-3">
+                            <div>
+                                <div class="listing-location text-muted small mb-1">
+                                    <i class="fa-solid fa-location-dot me-1 text-danger"></i>
+                                    <%= listing.location %>, <%= listing.country %>
+                                </div>
+                                <h5 class="listing-title mb-2" title="<%= listing.title %>">
+                                    <%= listing.title %>
+                                </h5>
+                            </div>
+                            <div class="listing-price pt-2 border-top d-flex align-items-center justify-content-between">
+                                <div>
+                                    <span class="price-amount">&#8377; <%= listing.price ? listing.price.toLocaleString("en-IN") : '0' %></span>
+                                    <span class="price-period text-muted small">/ night</span>
+                                </div>
+                                <span class="badge bg-light text-dark border small fw-normal">
+                                    <i class="fa-solid fa-star text-warning"></i> 4.9 (<%= listing.reviews ? listing.reviews.length : 5 %>)
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        <% } %>
+    </div>
+<% } %>

@@ -1,0 +1,98 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="row mt-4 mb-5 justify-content-center">
+    <div class="col-12 col-lg-10">
+        <!-- Hero Search -->
+        <div class="text-center mb-5">
+            <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill fw-semibold mb-2">Support & FAQ</span>
+            <h2 class="fw-bold">How can we help you?</h2>
+            <p class="text-muted col-md-7 mx-auto mb-4">Search our knowledge base or browse frequently asked questions regarding bookings, payments, and cancellations.</p>
+            <div class="col-12 col-md-7 mx-auto">
+                <div class="input-group shadow-sm rounded-pill overflow-hidden border">
+                    <span class="input-group-text bg-white border-0 ps-3 text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" class="form-control border-0 py-2" placeholder="Search guides, policies, or questions..." />
+                    <button class="btn btn-danger px-4 fw-semibold add-btn" type="button">Search</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ Accordion -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white mb-5">
+            <h4 class="fw-bold mb-4">Frequently Asked Questions</h4>
+
+            <div class="accordion accordion-flush" id="helpAccordion">
+                <div class="accordion-item border-bottom py-2">
+                    <h2 class="accordion-header" id="headingOne">
+                        <button class="accordion-button collapsed fw-semibold text-dark bg-transparent shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                            How do I add a stay to my Cart / Favorites?
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                        <div class="accordion-body text-secondary small">
+                            Simply click the heart icon on any listing card or click "Save to Cart" on the stay page. If you are not logged in, you will be prompted to log in or create an account so your cart is securely saved across your devices!
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item border-bottom py-2">
+                    <h2 class="accordion-header" id="headingTwo">
+                        <button class="accordion-button collapsed fw-semibold text-dark bg-transparent shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                            What is the cancellation policy?
+                        </button>
+                    </h2>
+                    <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                        <div class="accordion-body text-secondary small">
+                            Most listings allow free cancellation up to 48 hours before your scheduled check-in time. You can view the specific cancellation window on the stay’s detail page before confirming your reservation.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item border-bottom py-2">
+                    <h2 class="accordion-header" id="headingThree">
+                        <button class="accordion-button collapsed fw-semibold text-dark bg-transparent shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                            How do I list my own property on Halycon?
+                        </button>
+                    </h2>
+                    <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                        <div class="accordion-body text-secondary small">
+                            Click the "Add New Listing" button in the top navigation bar. Fill out details including property title, description, location, price per night, and an image URL. Your listing will go live immediately!
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item py-2">
+                    <h2 class="accordion-header" id="headingFour">
+                        <button class="accordion-button collapsed fw-semibold text-dark bg-transparent shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">
+                            Need more help or custom assistance?
+                        </button>
+                    </h2>
+                    <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#helpAccordion">
+                        <div class="accordion-body text-secondary small">
+                            You can reach out to our team at any time via <a href="/contact" class="text-danger fw-semibold">Contact Us</a> or send an email directly to <a href="mailto:support@halycon.com" class="text-danger fw-semibold">support@halycon.com</a>.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Help Cards -->
+        <div class="row g-3">
+            <div class="col-12 col-md-6">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-light text-center">
+                    <i class="fa-solid fa-envelope-open-text text-danger fs-2 mb-2"></i>
+                    <h5 class="fw-bold mb-1">Mail Our Support</h5>
+                    <p class="text-muted small mb-3">Reach out directly to our customer care team.</p>
+                    <a href="/contact" class="btn btn-outline-dark btn-sm rounded-pill px-4 align-self-center">Contact Us</a>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-light text-center">
+                    <i class="fa-solid fa-cart-shopping text-danger fs-2 mb-2"></i>
+                    <h5 class="fw-bold mb-1">Manage Your Cart</h5>
+                    <p class="text-muted small mb-3">Check your saved stays and planned trips.</p>
+                    <a href="/cart" class="btn btn-outline-danger btn-sm rounded-pill px-4 align-self-center">Go to Cart</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

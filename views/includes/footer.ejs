@@ -1,37 +1,105 @@
-<footer class="site-footer border-top">
+<footer class="site-footer border-top bg-white mt-auto pt-5 pb-4">
   <div class="container">
-    <div class="f-info d-flex flex-column align-items-center justify-content-center text-center py-4">
-      <!-- Social Media Icons (Centered) -->
-      <div class="f-info-socials d-flex align-items-center justify-content-center mb-3 gap-3">
-        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Facebook">
-          <i class="fa-brands fa-square-facebook"></i>
+    <div class="row g-4 mb-4">
+      <!-- Brand & Mission -->
+      <div class="col-12 col-md-4">
+        <a class="navbar-brand d-flex align-items-center gap-2 mb-2" href="/listings">
+          <i class="fa-solid fa-compass page-icon-red brand-icon fs-3"></i>
+          <span class="brand-name fs-4">Halycon</span>
         </a>
-        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Twitter">
-          <i class="fa-brands fa-square-x-twitter"></i>
-        </a>
-        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Instagram">
-          <i class="fa-brands fa-square-instagram"></i>
-        </a>
-        <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="LinkedIn">
-          <i class="fa-brands fa-linkedin"></i>
-        </a>
+        <p class="text-secondary small pe-md-4 lh-base mb-3">
+          Discover unique homes, vacation stays, and experiences around the world. Book verified properties with confidence and transparent pricing.
+        </p>
+        <!-- Social Icons -->
+        <div class="f-socials d-flex align-items-center gap-3">
+          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Facebook">
+            <i class="fa-brands fa-square-facebook"></i>
+          </a>
+          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Twitter">
+            <i class="fa-brands fa-square-x-twitter"></i>
+          </a>
+          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Instagram">
+            <i class="fa-brands fa-square-instagram"></i>
+          </a>
+          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="LinkedIn">
+            <i class="fa-brands fa-linkedin"></i>
+          </a>
+        </div>
       </div>
 
-      <!-- Brand Info (Centered) -->
-      <div class="f-info-brand mb-2">
-        <span>&copy; <%= new Date().getFullYear() %> Voyago Private Limited. All rights reserved.</span>
+      <!-- About Section -->
+      <div class="col-6 col-md-3">
+        <h6 class="fw-bold text-dark text-uppercase small mb-3">About</h6>
+        <ul class="list-unstyled d-flex flex-column gap-2 small mb-0">
+          <li><a href="/contact" class="footer-link">Contact Us</a></li>
+          <li><a href="/careers" class="footer-link">Careers <span class="badge bg-danger-subtle text-danger ms-1">Hiring</span></a></li>
+          <li><a href="/cart" class="footer-link">My Cart / Saved Stays</a></li>
+          <li><a href="/listings" class="footer-link">Explore Listings</a></li>
+        </ul>
       </div>
 
-      <!-- Footer Links (Centered) -->
-      <div class="f-info-links d-flex align-items-center justify-content-center flex-wrap gap-3">
-        <a href="/privacy">Privacy</a>
-        <span class="bullet-separator">&bull;</span>
-        <a href="/terms">Terms</a>
-        <span class="bullet-separator">&bull;</span>
-        <a href="/listings">Explore Stays</a>
-        <span class="bullet-separator">&bull;</span>
-        <a href="/listings/new">Host your place</a>
+      <!-- Support & Mail Us -->
+      <div class="col-6 col-md-3">
+        <h6 class="fw-bold text-dark text-uppercase small mb-3">Help & Support</h6>
+        <ul class="list-unstyled d-flex flex-column gap-2 small mb-0">
+          <li><a href="/help" class="footer-link">Help Center</a></li>
+          <li><a href="/contact" class="footer-link">Mail Us (<span class="text-danger">support@halycon.com</span>)</a></li>
+          <li><a href="/help" class="footer-link">Cancellation Options</a></li>
+          <li><a href="/help" class="footer-link">Safety Guidelines</a></li>
+        </ul>
+      </div>
+
+      <!-- Hosting Section -->
+      <div class="col-12 col-md-2">
+        <h6 class="fw-bold text-dark text-uppercase small mb-3">Hosting</h6>
+        <ul class="list-unstyled d-flex flex-column gap-2 small mb-0">
+          <li><a href="/listings/new" class="footer-link">Host your stay</a></li>
+          <li><a href="/listings" class="footer-link">Browse experiences</a></li>
+          <li><a href="/login" class="footer-link">Host Login</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Bottom Copyright Bar -->
+    <div class="pt-4 border-top d-flex flex-column flex-md-row align-items-center justify-content-between gap-2 small text-secondary">
+      <div>
+        <span>&copy; <%= new Date().getFullYear() %> Halycon Private Limited. All rights reserved.</span>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <a href="/help" class="footer-link">Privacy</a>
+        <span>&bull;</span>
+        <a href="/help" class="footer-link">Terms</a>
+        <span>&bull;</span>
+        <a href="/help" class="footer-link">Sitemap</a>
       </div>
     </div>
   </div>
 </footer>
+
+<!-- Login Prompt Modal (Shown when unauthenticated users try to add to Cart) -->
+<div class="modal fade" id="authPromptModal" tabindex="-1" aria-labelledby="authPromptModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 rounded-4 shadow">
+      <div class="modal-header border-0 pb-0">
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center px-4 pt-0 pb-4">
+        <div class="auth-modal-icon mb-3">
+          <i class="fa-solid fa-cart-shopping text-danger" style="font-size: 3rem;"></i>
+        </div>
+        <h4 class="fw-bold mb-2" id="authPromptModalLabel">Log in to save to Cart</h4>
+        <p class="text-secondary small mb-4">
+          Please log in or create an account so you can save your favorite stays to your Cart and book them anytime.
+        </p>
+        <div class="d-grid gap-2">
+          <a href="/login" class="btn btn-danger py-2 rounded-3 fw-semibold add-btn">
+            <i class="fa-solid fa-right-to-bracket me-2"></i> Log in
+          </a>
+          <a href="/signup" class="btn btn-outline-dark py-2 rounded-3 fw-semibold">
+            <i class="fa-solid fa-user-plus me-2"></i> Create an account
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

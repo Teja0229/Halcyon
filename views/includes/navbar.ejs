@@ -1,28 +1,199 @@
-<nav class="navbar navbar-expand-md bg-white border-bottom sticky-top shadow-sm">
+<nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top shadow-sm py-2">
   <div class="container">
-    <a class="navbar-brand d-flex align-items-center gap-2" href="/listings">
+    <!-- Brand -->
+    <a class="navbar-brand d-flex align-items-center gap-2 me-lg-4" href="/listings">
       <i class="fa-solid fa-compass page-icon-red brand-icon"></i>
-      <span class="brand-name">Voyago</span>
+      <span class="brand-name">Halycon</span>
     </a>
+
+    <!-- Mobile Toggler -->
     <button 
-        class="navbar-toggler border-0" 
+        class="navbar-toggler border-0 shadow-none p-1" 
         type="button" 
         data-bs-toggle="collapse" 
-        data-bs-target="#navbarNavAltMarkup" 
-        aria-controls="navbarNavAltMarkup"
+        data-bs-target="#navbarContent" 
+        aria-controls="navbarContent"
         aria-expanded="false"
         aria-label="Toggle navigation"
     >
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-      <div class="navbar-nav me-auto">
-        <a class="nav-link" href="/listings"><i class="fa-solid fa-house-chimney me-1 text-secondary"></i> Explore</a>
-      </div>
-      <div class="navbar-nav ms-auto align-items-md-center gap-2">
-        <a class="nav-link add-listing-nav-btn" href="/listings/new">
-          <i class="fa-solid fa-circle-plus me-1 text-danger"></i> Add New Listing
+
+    <!-- Nav Items & Search Bar -->
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <!-- Search Bar in Center -->
+      <form class="d-flex mx-auto my-2 my-lg-0 nav-search-form" action="/listings" method="GET" role="search">
+        <div class="input-group search-input-group rounded-pill overflow-hidden border">
+          <span class="input-group-text bg-white border-0 text-muted ps-3">
+            <i class="fa-solid fa-magnifying-glass text-secondary"></i>
+          </span>
+          <input 
+            class="form-control border-0 bg-white shadow-none ps-2" 
+            type="search" 
+            name="q" 
+            placeholder="Search destinations, stays, cities..." 
+            value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>"
+            aria-label="Search"
+          />
+          <button class="btn btn-danger search-submit-btn rounded-pill px-3 m-1" type="submit" aria-label="Submit search">
+            <i class="fa-solid fa-arrow-right d-none d-sm-inline"></i>
+            <span class="d-sm-none">Search</span>
+          </button>
+        </div>
+      </form>
+
+      <!-- Right Nav: Add Listing, Cart & Auth -->
+      <div class="navbar-nav ms-auto align-items-lg-center gap-2 pt-2 pt-lg-0">
+        <!-- Explore link -->
+        <a class="nav-link px-2" href="/listings">
+          <i class="fa-solid fa-house-chimney text-secondary me-1"></i> Explore
         </a>
+
+        <!-- Add Listing -->
+        <a class="nav-link add-listing-nav-btn text-nowrap px-3" href="/listings/new">
+          <i class="fa-solid fa-circle-plus me-1 text-danger"></i> Add Listing
+        </a>
+
+        <!-- Cart / Saved Stays Mini-Cart Dropdown in Menu -->
+        <div class="dropdown cart-dropdown-wrapper">
+          <button 
+            class="btn btn-link nav-link position-relative cart-nav-btn d-flex align-items-center gap-1 px-2 text-decoration-none shadow-none dropdown-toggle no-caret" 
+            type="button" 
+            id="cartDropdownMenu" 
+            data-bs-toggle="dropdown" 
+            data-bs-auto-close="outside"
+            aria-expanded="false" 
+            title="Saved Stays Cart"
+          >
+            <i class="fa-solid fa-cart-shopping text-danger fs-5"></i>
+            <span class="d-lg-none ms-1">Cart</span>
+            <span 
+              class="badge rounded-pill bg-danger cart-count-badge" 
+              id="cartCountBadge" 
+              style="<%= (typeof cartCount !== 'undefined' && cartCount > 0) ? '' : 'display: none;' %>"
+            >
+              <%= typeof cartCount !== 'undefined' ? cartCount : 0 %>
+            </span>
+          </button>
+
+          <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 p-0 mini-cart-menu mt-2" aria-labelledby="cartDropdownMenu" style="width: 320px; max-width: 90vw;">
+            <!-- Header -->
+            <div class="d-flex align-items-center justify-content-between p-3 border-bottom bg-light rounded-top-4">
+              <div class="d-flex align-items-center gap-2">
+                <i class="fa-solid fa-cart-shopping text-danger"></i>
+                <h6 class="mb-0 fw-bold">Saved Stays</h6>
+              </div>
+              <span class="badge bg-danger rounded-pill" id="miniCartHeaderBadge">
+                <%= typeof cartCount !== 'undefined' ? cartCount : 0 %> item(s)
+              </span>
+            </div>
+
+            <!-- List of items with images -->
+            <div class="mini-cart-items-list overflow-auto p-2" id="miniCartItemsContainer" style="max-height: 280px;">
+              <% if (!currUser) { %>
+                <div class="text-center py-4 px-3 text-muted">
+                  <i class="fa-regular fa-heart text-danger fs-2 mb-2 d-block"></i>
+                  <h6 class="fw-bold text-dark small mb-1">Your cart is empty</h6>
+                  <p class="small mb-3">Log in to view and save your favorite stays.</p>
+                  <a href="/login" class="btn btn-sm btn-danger rounded-pill px-3 fw-semibold add-btn">
+                    Log in
+                  </a>
+                </div>
+              <% } else if (typeof cartItems !== 'undefined' && cartItems && cartItems.length > 0) { %>
+                <% for (let item of cartItems) { 
+                  let img = (item.image && item.image.url) ? item.image.url : (typeof item.image === 'string' && item.image ? item.image : 'https://images.unsplash.com/photo-1625505826533-5c80aca7d157?ixlib=rb-4.0.3');
+                %>
+                  <div class="mini-cart-item d-flex align-items-center gap-2 p-2 rounded-3 mb-1 border-bottom-subtle position-relative" data-item-id="<%= item._id %>">
+                    <a href="/listings/<%= item._id %>" class="flex-shrink-0 text-decoration-none">
+                      <img src="<%= img %>" alt="<%= item.title %>" class="rounded-3 object-fit-cover" style="width: 52px; height: 52px;" />
+                    </a>
+                    <div class="flex-grow-1 min-w-0">
+                      <a href="/listings/<%= item._id %>" class="text-dark text-decoration-none d-block">
+                        <div class="fw-semibold small text-truncate" title="<%= item.title %>"><%= item.title %></div>
+                      </a>
+                      <div class="text-muted small" style="font-size: 0.78rem;">
+                        <i class="fa-solid fa-location-dot text-danger me-1"></i><%= item.location %>
+                      </div>
+                      <div class="fw-bold small text-dark">&#8377; <%= item.price ? item.price.toLocaleString("en-IN") : '0' %> <span class="text-muted fw-normal" style="font-size: 0.75rem;">/ night</span></div>
+                    </div>
+                    <button 
+                      class="btn btn-sm btn-link text-danger p-1 mini-cart-remove-btn" 
+                      type="button" 
+                      data-listing-id="<%= item._id %>" 
+                      title="Remove from cart"
+                    >
+                      <i class="fa-regular fa-trash-can"></i>
+                    </button>
+                  </div>
+                <% } %>
+              <% } else { %>
+                <div class="text-center py-4 px-3 text-muted empty-mini-cart-msg">
+                  <i class="fa-regular fa-heart text-danger fs-2 mb-2 d-block"></i>
+                  <p class="small mb-2">No stays saved in your cart yet.</p>
+                  <a href="/listings" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-semibold">
+                    Explore Stays
+                  </a>
+                </div>
+              <% } %>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-3 border-top bg-light rounded-bottom-4">
+              <a href="/cart" class="btn btn-danger btn-sm w-100 py-2 rounded-3 fw-semibold add-btn text-white text-decoration-none text-center d-block">
+                <i class="fa-solid fa-arrow-right-to-bracket me-1"></i> View Full Cart & Reserve
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Auth Section (Side of Add Listings) -->
+        <% if (!currUser) { %>
+          <div class="d-flex align-items-center gap-2 mt-2 mt-lg-0">
+            <a class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-semibold" href="/login">
+              <i class="fa-regular fa-user me-1"></i> Log in
+            </a>
+            <a class="btn btn-danger btn-sm rounded-pill px-3 text-white fw-semibold add-btn" href="/signup">
+              Sign up
+            </a>
+          </div>
+        <% } else { %>
+          <div class="dropdown mt-2 mt-lg-0">
+            <button 
+              class="btn btn-light btn-sm border rounded-pill dropdown-toggle d-flex align-items-center gap-2 px-3 py-1 text-dark shadow-sm" 
+              type="button" 
+              id="userMenuButton" 
+              data-bs-toggle="dropdown" 
+              aria-expanded="false"
+            >
+              <div class="user-avatar-sm bg-danger text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 26px; height: 26px; font-size: 0.75rem;">
+                <i class="fa-solid fa-user"></i>
+              </div>
+              <span class="fw-semibold small"><%= currUser.username %></span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-2" aria-labelledby="userMenuButton">
+              <li>
+                <div class="dropdown-header small">Signed in as <strong><%= currUser.username %></strong></div>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 small py-2" href="/cart">
+                  <i class="fa-solid fa-cart-shopping text-danger"></i> My Cart & Saved Stays
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 small py-2" href="/listings/new">
+                  <i class="fa-solid fa-plus text-secondary"></i> Host a New Stay
+                </a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 small py-2 text-danger" href="/logout">
+                  <i class="fa-solid fa-right-from-bracket"></i> Log out
+                </a>
+              </li>
+            </ul>
+          </div>
+        <% } %>
       </div>
     </div>
   </div>
