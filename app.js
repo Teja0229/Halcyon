@@ -441,11 +441,14 @@ app.all("/*splat", (req, res, next) => {
 
 // Error handler
 app.use((err, req, res, next) => {
+    if (res.headersSent) {
+        return next(err);
+    }
     let { statusCode = 500, message = "Something went wrong!" } = err;
     res.status(statusCode).render("error.ejs", { err });
 });
 
 const port = process.env.PORT || 8080;
-app.listen(port, () => {
+app.listen(port, "0.0.0.0", () => {
     console.log(`Server is running on port ${port}`);
 });
